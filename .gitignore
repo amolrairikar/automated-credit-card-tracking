@@ -1,0 +1,19 @@
+# Env files
+.env
+
+# Random files with notes/code that is not saved in an official file
+notepad.txt
+
+# pycache
+__pycache__/
+.pytest_cache/
+
+# .git
+.git/
+
+# Ruff cache
+.ruff_cache/
+
+# Coverage files
+.coverage
+.coverage.*

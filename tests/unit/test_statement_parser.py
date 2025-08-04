@@ -5,12 +5,12 @@ from unittest.mock import patch, MagicMock
 import pytest
 from openai import OpenAIError
 
-from api.statement_parser import extract_statement_details
+from api.utils.statement_parser import extract_statement_details
 
 
-@patch("api.statement_parser.redact_pii")
-@patch("api.statement_parser.OpenAI")
-@patch("api.statement_parser.logger")
+@patch("api.utils.statement_parser.redact_pii")
+@patch("api.utils.statement_parser.OpenAI")
+@patch("api.utils.statement_parser.logger")
 def test_extract_statement_details_success(mock_logger, mock_openai, mock_redact):
     """Tests successful extraction of statement details."""
     mock_client = MagicMock()
@@ -38,7 +38,7 @@ def test_extract_statement_details_success(mock_logger, mock_openai, mock_redact
     mock_logger.info.assert_any_call("Extracted %d transactions.", 2)
 
 
-@patch("api.statement_parser.logger")
+@patch("api.utils.statement_parser.logger")
 def test_extract_statement_details_invalid_prompt_set(mock_logger):
     """Tests that an invalid prompt set raises a ValueError."""
     with pytest.raises(ValueError) as excinfo:
@@ -51,7 +51,7 @@ def test_extract_statement_details_invalid_prompt_set(mock_logger):
     mock_logger.error.assert_called_with("Invalid prompt set: %s", "nonexistent_prompt")
 
 
-@patch("api.statement_parser.logger")
+@patch("api.utils.statement_parser.logger")
 def test_extract_statement_details_no_api_key(mock_logger):
     """Tests that missing OPENAI_API_KEY environment variable raises a ValueError."""
     if "OPENAI_API_KEY" in os.environ:
@@ -67,9 +67,9 @@ def test_extract_statement_details_no_api_key(mock_logger):
     )
 
 
-@patch("api.statement_parser.redact_pii")
-@patch("api.statement_parser.OpenAI")
-@patch("api.statement_parser.logger")
+@patch("api.utils.statement_parser.redact_pii")
+@patch("api.utils.statement_parser.OpenAI")
+@patch("api.utils.statement_parser.logger")
 def test_extract_statement_details_invalid_json(mock_logger, mock_openai, mock_redact):
     """Tests that invalid JSON in the OpenAI response raises a ValueError."""
     mock_client = MagicMock()
@@ -94,8 +94,8 @@ def test_extract_statement_details_invalid_json(mock_logger, mock_openai, mock_r
     )
 
 
-@patch("api.statement_parser.redact_pii")
-@patch("api.statement_parser.OpenAI")
+@patch("api.utils.statement_parser.redact_pii")
+@patch("api.utils.statement_parser.OpenAI")
 def test_extract_statement_details_results_not_dict(mock_openai, mock_redact):
     """Tests that if `transactions` object is not a dict, a ValueError is raised."""
     mock_client = MagicMock()
@@ -117,9 +117,9 @@ def test_extract_statement_details_results_not_dict(mock_openai, mock_redact):
     assert "Expected response to be a dict" in str(excinfo.value)
 
 
-@patch("api.statement_parser.redact_pii")
-@patch("api.statement_parser.OpenAI")
-@patch("api.statement_parser.logger")
+@patch("api.utils.statement_parser.redact_pii")
+@patch("api.utils.statement_parser.OpenAI")
+@patch("api.utils.statement_parser.logger")
 def test_extract_statement_details_transaction_not_dict(
     mock_logger, mock_openai, mock_redact
 ):
@@ -144,8 +144,8 @@ def test_extract_statement_details_transaction_not_dict(
     assert "is not a dictionary" in str(excinfo.value)
 
 
-@patch("api.statement_parser.redact_pii")
-@patch("api.statement_parser.OpenAI")
+@patch("api.utils.statement_parser.redact_pii")
+@patch("api.utils.statement_parser.OpenAI")
 def test_extract_statement_details_transaction_missing_fields(mock_openai, mock_redact):
     mock_client = MagicMock()
     mock_response = MagicMock()
@@ -169,9 +169,9 @@ def test_extract_statement_details_transaction_missing_fields(mock_openai, mock_
     assert "currency" in str(excinfo.value)
 
 
-@patch("api.statement_parser.redact_pii")
-@patch("api.statement_parser.OpenAI")
-@patch("api.statement_parser.logger")
+@patch("api.utils.statement_parser.redact_pii")
+@patch("api.utils.statement_parser.OpenAI")
+@patch("api.utils.statement_parser.logger")
 def test_extract_statement_details_openai_error(mock_logger, mock_openai, mock_redact):
     mock_client = MagicMock()
     mock_client.chat.completions.create.side_effect = OpenAIError("fail")

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from openai import OpenAI, OpenAIError
 
 from api.utils.prompts import PROMPTS
-from api.utils.redact_pii import redact_pii
+from api.utils.redact_pii import remove_pii_columns
 from api.utils.setup_logger import setup_logger
 
 load_dotenv()
@@ -37,10 +37,10 @@ def extract_statement_details(
         raise ValueError("OPENAI_API_KEY environment variable is not set.")
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     try:
-        statement_text = redact_pii(text=statement_text)
+        statement_text = remove_pii_columns(csv_text=statement_text)
         logger.info("Redacted PII from statement text.")
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-5-nano",
             messages=[
                 {"role": "system", "content": PROMPTS[prompt_set]["system_prompt"]},
                 {

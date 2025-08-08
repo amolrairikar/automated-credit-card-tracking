@@ -1,6 +1,0 @@
-[tool.coverage.report]
-omit = [
-    "tests/*",
-    "*/test_*.py",
-    "*/prompts.py"
-]

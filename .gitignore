@@ -17,5 +17,4 @@ __pycache__/
 htmlcov
 
 # Statement files
-*.pdf
 *.csv

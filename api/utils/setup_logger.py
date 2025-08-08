@@ -2,7 +2,9 @@ import logging
 import sys
 
 
-def setup_logger(logger_name: str, level: int, file_name=None) -> logging.Logger:
+def setup_logger(
+    logger_name: str, level: int = logging.INFO, file_name=None
+) -> logging.Logger:
     """
     Sets up a logger for the application with a given name and logging level. Optionally logs to
     a file specified by file_name.

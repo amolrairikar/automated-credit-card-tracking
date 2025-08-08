@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 "fastapi[standard]" = "*"
 openai = "*"
-pypdf = "*"
 python-dotenv = "*"
 
 [dev-packages]

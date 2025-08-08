@@ -1,45 +1,41 @@
-import os
-import re
-from typing import Pattern
+import csv
+import io
+
+from api.utils.setup_logger import setup_logger
+
+logger = setup_logger(__name__)
 
 
-def redact_pii(text: str) -> str:
-    """Redacts PII from the given text.
+def remove_pii_columns(csv_text: str) -> str:
+    """Removes PII columns from the given CSV text.
 
     Args:
-        text (str): The input text potentially containing PII.
+        text (str): The input CSV text string containing PII columns.
 
     Returns:
-        str: The text with PII redacted.
+        str: The CSV text with PII redacted.
     """
-    names = os.getenv("REDACT_NAMES", "").replace('"', "")
-    name_list = [name.strip() for name in names.split(",") if name.strip()]
-    patterns: dict[str, list[Pattern]] = {
-        "account_numbers": [
-            re.compile(r"(Account Ending\s+\d-\s*)(?P<pii>\d{5})\b", re.IGNORECASE),
-            re.compile(r"(ending in\s+)(?P<pii>\d{4})\b", re.IGNORECASE),
-            re.compile(r"(?P<pii>\b\d{15}\b)"),
-            re.compile(r"(?P<pii>\b\d{16}\b)"),
-            re.compile(r"(?P<pii>\b(?:\d{4}\s){3}\d{4}\b)"),
-            re.compile(r"(?P<pii>\b\d{41}\b)"),
-            re.compile(r"(?P<pii>\b\d{41})"),
-            re.compile(r"(?P<pii>\b[a-zA-Z0-9]{26}\b)"),
-            re.compile(r"(XXXX\sXXXX\sXXXX\s)(?P<pii>\d{4})\b"),
-            re.compile(r"(Account Number Ending in\s+)(?P<pii>\d{4})\b", re.IGNORECASE),
-            re.compile(r"(#)(?P<pii>\d{4})\b"),
-        ],
-        "addresses": [
-            re.compile(
-                r"(?P<pii>\b\d{1,6}\s+[\w\s]{2,30}?\s(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr|Court|Ct|Way|Circle|Cir|Trail|Trl|Parkway|Pkwy|Place|Pl)\b\.?,?)",
-                re.IGNORECASE,
-            )
-        ],
-        "zip_codes": [re.compile(r"(?P<pii>\b\d{5}(?:-\d{4})?)\b")],
-        "name": [re.compile(rf"(?P<pii>\b(?:{'|'.join(name_list)})\b)", re.IGNORECASE)],
-    }
-    for pattern_list in patterns.values():
-        for pattern in pattern_list:
-            text = pattern.sub(
-                lambda m: m.group(0).replace(m.group("pii"), "[REDACTED]"), text
-            )
-    return text
+    if not csv_text:
+        logger.error("Detected empty CSV file")
+        raise ValueError("CSV text cannot be empty")
+    cols_to_remove = [
+        "Card No.",
+        "Check or Slip #",
+        "From",
+        "To",
+    ]
+    lines = csv_text.splitlines()
+    reader = csv.DictReader(lines)
+    fieldnames = [f for f in reader.fieldnames if f not in cols_to_remove]
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    for row in reader:
+        for col in cols_to_remove:
+            if None in row:
+                del row[None]
+            row.pop(col, None)
+        writer.writerow(row)
+
+    return output.getvalue()
